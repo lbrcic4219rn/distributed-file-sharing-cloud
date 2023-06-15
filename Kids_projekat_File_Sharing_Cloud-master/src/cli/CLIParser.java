@@ -6,14 +6,13 @@ import java.util.Scanner;
 
 import app.AppConfig;
 import app.Cancellable;
-import cli.basic_command.CLICommand;
-import cli.basic_command.InfoCommand;
-import cli.basic_command.PauseCommand;
-import cli.basic_command.StopCommand;
-import cli.basic_command.SuccessorInfo;
-import cli.storage_command.StorageAddCommand;
-import cli.storage_command.StoragePullCommand;
-import cli.storage_command.StorageRemoveCommand;
+import cli.command.CLICommand;
+import cli.command.DHTGetCommand;
+import cli.command.DHTPutCommand;
+import cli.command.InfoCommand;
+import cli.command.PauseCommand;
+import cli.command.StopCommand;
+import cli.command.SuccessorInfo;
 import servent.SimpleServentListener;
 
 /**
@@ -46,11 +45,9 @@ public class CLIParser implements Runnable, Cancellable {
 		commandList.add(new InfoCommand());
 		commandList.add(new PauseCommand());
 		commandList.add(new SuccessorInfo());
+		commandList.add(new DHTGetCommand());
+		commandList.add(new DHTPutCommand());
 		commandList.add(new StopCommand(this, listener));
-
-		commandList.add(new StorageAddCommand());
-		commandList.add(new StoragePullCommand());
-		commandList.add(new StorageRemoveCommand());
 	}
 	
 	@Override

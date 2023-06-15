@@ -1,5 +1,4 @@
-pause 51000
-add testDir
-pause 20000
-pause 5000
+pause 50000
+dht_put 2 5
+pause 10000
 stop

@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public class ServentInfo implements Serializable {
 
-	private static final long serialVersionUID = 4971234960037495511L;
+	private static final long serialVersionUID = 5304170042791281555L;
 	private final String ipAddress;
 	private final int listenerPort;
 	private final int chordId;
@@ -17,7 +17,7 @@ public class ServentInfo implements Serializable {
 	public ServentInfo(String ipAddress, int listenerPort) {
 		this.ipAddress = ipAddress;
 		this.listenerPort = listenerPort;
-		this.chordId = ChordState.chordHash(ipAddress + ":" + listenerPort);
+		this.chordId = ChordState.chordHash(listenerPort);
 	}
 
 	public String getIpAddress() {
@@ -34,7 +34,7 @@ public class ServentInfo implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "[cId: " + chordId + "|ipA: " + ipAddress + "|lP: " + listenerPort + "]";
+		return "[" + chordId + "|" + ipAddress + "|" + listenerPort + "]";
 	}
 
 }
