@@ -1,5 +1,7 @@
 # Build output
 out/
+build/
+.gradle/
 *.class
 
 # IntelliJ user-specific files
