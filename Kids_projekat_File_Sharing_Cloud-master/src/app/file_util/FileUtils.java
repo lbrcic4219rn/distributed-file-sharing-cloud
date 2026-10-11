@@ -12,13 +12,13 @@ public class FileUtils {
 
 
     public static boolean isPathFile(String rootDirectory, String path) {
-        File f = new File(rootDirectory + "\\" + path);
+        File f = new File(rootDirectory + File.separator + path);
         System.out.println("# file exists");
         return f.isFile();
     }
 
     public static FileInfo getFileInfoFromPath(String rootDirectory, String path) {
-        path = rootDirectory + "\\" + path;
+        path = rootDirectory + File.separator + path;
         File f = new File(path);
 
         if (!f.exists()) {
@@ -31,7 +31,7 @@ public class FileUtils {
         }
 
         try {
-            String filePath = path.replace(rootDirectory + "\\", "");
+            String filePath = path.replace(rootDirectory + File.separator, "");
 
             BufferedReader reader = new BufferedReader(new FileReader(f));
             StringBuilder fileContent = new StringBuilder();
@@ -57,7 +57,7 @@ public class FileUtils {
 
         List<FileInfo> fileInfoList = new ArrayList<>();
 
-        path = rootDirectory + "\\" + path;
+        path = rootDirectory + File.separator + path;
         File f = new File(path);
         if (!f.exists()) {
             AppConfig.timestampedErrorPrint("Directory " + path + " doesn't exist.");
@@ -78,7 +78,7 @@ public class FileUtils {
 
             File dir = new File(dirPath);
             for (File file : dir.listFiles()) {
-                String filePath = file.getPath().replace(rootDirectory + "\\", "");
+                String filePath = file.getPath().replace(rootDirectory + File.separator, "");
                 subFiles.add(filePath);
 
                 if (file.isFile()) {
@@ -91,7 +91,7 @@ public class FileUtils {
                 }
             }
 
-            dirPath = dirPath.replace(rootDirectory + "\\", "");
+            dirPath = dirPath.replace(rootDirectory + File.separator, "");
             fileInfoList.add(new FileInfo(dirPath, subFiles, AppConfig.myServentInfo.getChordId()));
         }
         return fileInfoList;

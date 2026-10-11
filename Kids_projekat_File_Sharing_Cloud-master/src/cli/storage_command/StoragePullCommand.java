@@ -1,5 +1,6 @@
 package cli.storage_command;
 
+import java.io.File;
 import app.AppConfig;
 import cli.basic_command.CLICommand;
 
@@ -20,7 +21,7 @@ public class StoragePullCommand implements CLICommand {
         }
 
         String[] splitArgs = args.split(" ");
-        String path = splitArgs[0].replace('/', '\\');
+        String path = splitArgs[0].replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
 
         AppConfig.chordState.pullFile(path);

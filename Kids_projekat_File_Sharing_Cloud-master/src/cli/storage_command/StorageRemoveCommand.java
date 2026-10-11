@@ -1,5 +1,6 @@
 package cli.storage_command;
 
+import java.io.File;
 import app.AppConfig;
 import cli.basic_command.CLICommand;
 import mutex.TokenMutex;
@@ -21,7 +22,7 @@ public class StorageRemoveCommand implements CLICommand {
         }
 
 
-        String path = args.replace('/' , '\\');
+        String path = args.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
         //proverimo da li postoji path, i proverimo da li smo mi node koji je originalno dodao file
         if (AppConfig.chordState.getStorageMap().containsKey(path)){

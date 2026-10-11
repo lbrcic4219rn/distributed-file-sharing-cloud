@@ -1,5 +1,6 @@
 package cli.storage_command;
 
+import java.io.File;
 import app.AppConfig;
 import app.file_util.FileInfo;
 import app.file_util.FileUtils;
@@ -22,7 +23,7 @@ public class StorageAddCommand implements CLICommand {
             return;
         }
 
-        String path = args.replace('/' , '\\');
+        String path = args.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
         TokenMutex.lock();//LOCK 1a
 

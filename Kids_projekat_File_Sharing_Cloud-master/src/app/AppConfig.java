@@ -1,5 +1,6 @@
 package app;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -85,6 +86,10 @@ public class AppConfig {
 		}
 
 		ROOT_DIR = properties.getProperty("work_dir" + serventId);
+		if (ROOT_DIR != null) {
+			//normalize separators so the same config works on Windows and Unix
+			ROOT_DIR = new File(ROOT_DIR.replace('\\', '/')).getPath();
+		}
 		if (ROOT_DIR == null) {
 			System.err.println("Problem reading work_directory property. Exiting...");
 			System.exit(0);
