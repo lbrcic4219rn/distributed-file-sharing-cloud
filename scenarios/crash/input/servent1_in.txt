@@ -1,0 +1,2 @@
+pause 48000
+add fileTest1.txt

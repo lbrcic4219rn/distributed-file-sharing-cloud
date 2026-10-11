@@ -1,42 +1,48 @@
 package cli.basic_command;
 
-import lombok.RequiredArgsConstructor;
-
 import app.AppConfig;
+import app.BootstrapClient;
+import app.Cancellable;
+import app.ServentInfo;
 import cli.CLIParser;
+import lombok.RequiredArgsConstructor;
+import mutex.TokenMutex;
 import servent.SimpleServentListener;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
+import servent.base_message.LeaveMessage;
+import servent.base_message.util.RingBroadcaster;
 
 @RequiredArgsConstructor
 public class StopCommand implements CLICommand {
 
-	private final CLIParser parser;
-	private final SimpleServentListener listener;
-	
-	@Override
-	public String commandName() {
-		return "stop";
-	}
+    private final CLIParser parser;
+    private final SimpleServentListener listener;
+    private final Cancellable failureDetector;
 
-	@Override
-	public void execute(String args) {
-		AppConfig.timestampedStandardPrint("Stopping...");
-		parser.stop();
-		listener.stop();
+    @Override
+    public String commandName() {
+        return "stop";
+    }
 
-		String bsAddress = AppConfig.BOOTSTRAP_ADDRESS;
-		int bsPort = AppConfig.BOOTSTRAP_PORT;
+    @Override
+    public void execute(String args) {
+        AppConfig.timestampedStandardPrint("Stopping...");
 
-		try (Socket bsSocket = new Socket(bsAddress, bsPort)) {
-			PrintWriter bsWriter = new PrintWriter(bsSocket.getOutputStream());
-			bsWriter.write("Bye\n" + AppConfig.myServentInfo.getIpAddress() + ":" + AppConfig.myServentInfo.getListenerPort() + "\n");
-			bsWriter.flush();
-		} catch (IOException e) {
-			AppConfig.timestampedErrorPrint("Couldn't say bye to the bootstrap server", e);
-		}
-	}
+        if (AppConfig.chordState.getSuccessor() != null) {
+            TokenMutex.lock();
+
+            ServentInfo successor = AppConfig.chordState.getSuccessor();
+            if (successor != null) {
+                RingBroadcaster.broadcastAndWait(new LeaveMessage(AppConfig.myServentInfo.getChordId(), AppConfig.myServentInfo,
+                        successor.getChordId(), AppConfig.storage.getOwnedSnapshot()));
+                TokenMutex.handOver(successor);
+            }
+        }
+        BootstrapClient.notify("Bye", AppConfig.myServentInfo);
+
+        failureDetector.stop();
+        parser.stop();
+        listener.stop();
+        AppConfig.timestampedStandardPrint("Stopped.");
+    }
 
 }

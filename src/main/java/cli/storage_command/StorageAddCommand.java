@@ -1,11 +1,16 @@
 package cli.storage_command;
 
-import java.io.File;
 import app.AppConfig;
 import app.file_util.FileInfo;
 import app.file_util.FileUtils;
 import cli.basic_command.CLICommand;
 import mutex.TokenMutex;
+import servent.base_message.util.RingBroadcaster;
+import servent.failure.BackupUtil;
+import servent.storage_message.AddInformMessage;
+
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StorageAddCommand implements CLICommand {
@@ -25,23 +30,41 @@ public class StorageAddCommand implements CLICommand {
 
         String path = args.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
-        TokenMutex.lock();//LOCK 1a
-
+        List<FileInfo> found = new ArrayList<>();
         if (FileUtils.isPathFile(AppConfig.ROOT_DIR, path)) {
             FileInfo fileInfo = FileUtils.getFileInfoFromPath(AppConfig.ROOT_DIR, path);
             if (fileInfo != null) {
-                AppConfig.chordState.addToStorage(fileInfo, AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort());
+                found.add(fileInfo);
             }
+        } else {
+            found.addAll(FileUtils.getDirectoryInfoFromPath(AppConfig.ROOT_DIR, path));
         }
-        else {
-            List<FileInfo> fileInfoList = FileUtils.getDirectoryInfoFromPath(AppConfig.ROOT_DIR, path);
-            if (!fileInfoList.isEmpty()) {
-                for (FileInfo fileInfo : fileInfoList) {
-                    AppConfig.chordState.addToStorage(fileInfo, AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort());
-                }
-            }
+        if (found.isEmpty()) {
+            return;
         }
 
-        TokenMutex.unlock(); //UNLOCK 1a
+        TokenMutex.lock();//LOCK 1a
+        try {
+            List<FileInfo> newEntries = new ArrayList<>();
+            for (FileInfo fileInfo : found) {
+                if (fileInfo.isDirectory()) {
+                    AppConfig.storage.addEntry(fileInfo);
+                    newEntries.add(fileInfo);
+                } else if (AppConfig.storage.contains(fileInfo.getPath())) {
+                    AppConfig.timestampedErrorPrint("Can't add " + fileInfo.getPath() + " - it already exists in the system");
+                } else {
+                    AppConfig.storage.addOwned(fileInfo);
+                    newEntries.add(fileInfo.withoutContent());
+                    AppConfig.timestampedStandardPrint("File " + fileInfo.getPath() + " stored successfully.");
+                }
+            }
+
+            if (newEntries.stream().anyMatch(FileInfo::isFile)) {
+                RingBroadcaster.broadcastAndWait(new AddInformMessage(AppConfig.myServentInfo.getChordId(), newEntries));
+                BackupUtil.resync();
+            }
+        } finally {
+            TokenMutex.unlock(); //UNLOCK 1a
+        }
     }
 }

@@ -1,15 +1,17 @@
-# Build output
 out/
 build/
 .gradle/
 *.class
 
-# IntelliJ user-specific files
 *.iml
 .idea/workspace.xml
 .idea/shelf/
 .idea/tasks.xml
 .idea/usage.statistics.xml
 
-# macOS
 .DS_Store
+
+chord/output/
+chord/error/
+scenarios/*/output/
+scenarios/*/error/

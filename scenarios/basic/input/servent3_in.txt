@@ -1,0 +1,8 @@
+pause 43000
+add fileTest1.txt
+pause 10000
+pull fileTest1.txt
+pause 30000
+info
+pause 50000
+stop

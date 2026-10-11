@@ -1,69 +1,68 @@
 package servent.base_handler;
 
-import lombok.RequiredArgsConstructor;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import app.AppConfig;
 import app.ServentInfo;
 import app.file_util.FileInfo;
+import lombok.RequiredArgsConstructor;
 import mutex.TokenMutex;
-import servent.base_message.Message;
-import servent.base_message.MessageType;
-import servent.base_message.NewNodeMessage;
-import servent.base_message.SorryMessage;
-import servent.base_message.WelcomeMessage;
+import servent.base_message.*;
 import servent.base_message.util.MessageUtil;
+
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class NewNodeHandler implements MessageHandler {
 
-	private final Message clientMessage;
+    private final Message clientMessage;
 
-	@Override
-	public void run() {
-		if (clientMessage.getMessageType() == MessageType.NEW_NODE) {
-			String newNodeIp = clientMessage.getSenderIpAddress();
-			int newNodePort = clientMessage.getSenderPort();
-			ServentInfo newNodeInfo = new ServentInfo(newNodeIp, newNodePort);
+    @Override
+    public void run() {
+        if (clientMessage.getMessageType() == MessageType.NEW_NODE) {
+            AppConfig.chordState.awaitJoined();
 
-			//check if the new node collides with another existing node.
-			if (AppConfig.chordState.isCollision(newNodeInfo.getChordId())) {
-				Message sry = new SorryMessage(AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
-						clientMessage.getSenderIpAddress(), clientMessage.getSenderPort());
-				MessageUtil.sendMessage(sry);
-				return;
-			}
+            String newNodeIp = clientMessage.getSenderIpAddress();
+            int newNodePort = clientMessage.getSenderPort();
+            ServentInfo newNodeInfo = new ServentInfo(newNodeIp, newNodePort);
 
-			//check if he is my predecessor
-			boolean isMyPred = AppConfig.chordState.isKeyMine(newNodeInfo.getChordId());
-			if (isMyPred) { //if yes, prepare and send welcome message
+            //check if the new node collides with another existing node.
+            if (AppConfig.chordState.isCollision(newNodeInfo.getChordId())) {
+                Message sry = new SorryMessage(AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
+                        clientMessage.getSenderIpAddress(), clientMessage.getSenderPort());
+                MessageUtil.sendMessage(sry);
+                return;
+            }
 
-				//Pozivamo mutex lock
-				TokenMutex.lock();//LOCK 1n
+            //check if he is my predecessor
+            boolean isMyPred = AppConfig.chordState.isKeyMine(newNodeInfo.getChordId());
+            if (isMyPred) { //if yes, prepare and send welcome message
 
-				AppConfig.chordState.setPredecessor(newNodeInfo);
+                //Pozivamo mutex lock
+                TokenMutex.lock();//LOCK 1n
 
-				Map<String, FileInfo> myStorage = AppConfig.chordState.getStorageMap();
+                if (AppConfig.chordState.isCollision(newNodeInfo.getChordId()) || !AppConfig.chordState.isKeyMine(newNodeInfo.getChordId())) {
+                    TokenMutex.unlock();
+                    MessageUtil.sendMessage(new NewNodeMessage(newNodeIp, newNodePort,
+                            AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort()));
+                    return;
+                }
 
-				Map<String, FileInfo> hisStorage = new HashMap<>(myStorage);
+                AppConfig.chordState.setPredecessor(newNodeInfo);
 
-				WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
-						newNodeIp, newNodePort, hisStorage);
-				MessageUtil.sendMessage(wm);
-			}
-			else { //if he is not my predecessor, let someone else take care of it
-				ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(newNodeInfo.getChordId());
-				NewNodeMessage nnm = new NewNodeMessage(newNodeIp, newNodePort, nextNode.getIpAddress(), nextNode.getListenerPort());
-				MessageUtil.sendMessage(nnm);
-			}
+                Map<String, FileInfo> hisStorage = AppConfig.storage.getIndexSnapshot();
 
-		}
-		else {
-			AppConfig.timestampedErrorPrint("NEW_NODE handler got something that is not new node message.");
-		}
+                WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
+                        newNodeIp, newNodePort, hisStorage);
+                MessageUtil.sendMessage(wm);
+            } else { //if he is not my predecessor, let someone else take care of it
+                ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(newNodeInfo.getChordId());
+                NewNodeMessage nnm = new NewNodeMessage(newNodeIp, newNodePort, nextNode.getIpAddress(), nextNode.getListenerPort());
+                MessageUtil.sendMessage(nnm);
+            }
 
-	}
+        } else {
+            AppConfig.timestampedErrorPrint("NEW_NODE handler got something that is not new node message.");
+        }
+
+    }
 
 }

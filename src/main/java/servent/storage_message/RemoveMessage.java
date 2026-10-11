@@ -1,17 +1,30 @@
 package servent.storage_message;
 
+import app.AppConfig;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import servent.base_message.BasicMessage;
 import servent.base_message.MessageType;
+import servent.base_message.RingBroadcast;
 
 import java.io.Serial;
+import java.util.List;
 
-public class RemoveMessage extends BasicMessage {
+@Getter
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+public class RemoveMessage extends BasicMessage implements RingBroadcast {
 
     @Serial
-    private static final long serialVersionUID = 2261615800740632985L;
+    private static final long serialVersionUID = 1L;
 
-    public RemoveMessage(String senderIpAddress, int senderPort, String receiverIpAddress, int receiverPort, String path) {
-        super(MessageType.REMOVE, senderIpAddress, senderPort, receiverIpAddress, receiverPort, path);
+    private final int originChordId;
+    private final List<String> paths;
+
+    public RemoveMessage(int originChordId, List<String> paths) {
+        super(MessageType.REMOVE, AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
+                AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort());
+        this.originChordId = originChordId;
+        this.paths = paths;
     }
 
 }

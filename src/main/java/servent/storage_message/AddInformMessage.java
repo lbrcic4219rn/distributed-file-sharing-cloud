@@ -1,32 +1,31 @@
 package servent.storage_message;
 
+import app.AppConfig;
+import app.file_util.FileInfo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-
-import app.file_util.FileInfo;
 import servent.base_message.BasicMessage;
 import servent.base_message.MessageType;
+import servent.base_message.RingBroadcast;
 
 import java.io.Serial;
+import java.util.List;
 
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AddInformMessage extends BasicMessage {
+public class AddInformMessage extends BasicMessage implements RingBroadcast {
 
     @Serial
-    private static final long serialVersionUID = 7277911492888707017L;
-    private final String requesterIpAddress;
-    private final int requesterPort;
-    private final FileInfo fileInfo;
+    private static final long serialVersionUID = 1L;
 
-    public AddInformMessage(String senderIpAddress, int senderPort, String receiverIpAddress, int receiverPort,
-                            String requesterIpAddress, int requesterPort, FileInfo fileInfo) {
-        super(MessageType.ADD_INFORM, senderIpAddress, senderPort, receiverIpAddress, receiverPort);
+    private final int originChordId;
+    private final List<FileInfo> entries;
 
-        this.requesterIpAddress = requesterIpAddress;
-        this.requesterPort = requesterPort;
-        this.fileInfo = fileInfo;
+    public AddInformMessage(int originChordId, List<FileInfo> entries) {
+        super(MessageType.ADD_INFORM, AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
+                AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort());
+        this.originChordId = originChordId;
+        this.entries = entries;
     }
 
 }

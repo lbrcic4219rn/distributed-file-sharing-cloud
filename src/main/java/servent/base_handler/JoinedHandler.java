@@ -1,10 +1,9 @@
 package servent.base_handler;
 
-import lombok.RequiredArgsConstructor;
-
 import app.AppConfig;
-import servent.base_message.Message;
+import lombok.RequiredArgsConstructor;
 import mutex.TokenMutex;
+import servent.base_message.Message;
 import servent.base_message.MessageType;
 
 @RequiredArgsConstructor

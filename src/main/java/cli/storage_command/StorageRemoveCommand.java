@@ -1,10 +1,14 @@
 package cli.storage_command;
 
-import java.io.File;
 import app.AppConfig;
 import cli.basic_command.CLICommand;
 import mutex.TokenMutex;
+import servent.base_message.util.RingBroadcaster;
+import servent.failure.BackupUtil;
+import servent.storage_message.RemoveMessage;
 
+import java.io.File;
+import java.util.List;
 
 public class StorageRemoveCommand implements CLICommand {
 
@@ -17,22 +21,30 @@ public class StorageRemoveCommand implements CLICommand {
     public void execute(String args) {
 
         if (args == null || args.isEmpty()) {
-            AppConfig.timestampedStandardPrint("Invalid argument for add command. Should be add path.");
+            AppConfig.timestampedStandardPrint("Invalid argument for remove command. Should be remove path.");
             return;
         }
 
-
         String path = args.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
-        //proverimo da li postoji path, i proverimo da li smo mi node koji je originalno dodao file
-        if (AppConfig.chordState.getStorageMap().containsKey(path)){
-            if (AppConfig.chordState.getStorageMap().get(path).getOgNode() == AppConfig.myServentInfo.getChordId()){
-                TokenMutex.lock();//LOCK 1r
-                AppConfig.chordState.removeFileFromStorage(path);
-                TokenMutex.unlock();//UNLOCK 1r
-            } else AppConfig.timestampedErrorPrint("This node is not the main holder of the file, can not delete selected file");
-        } else AppConfig.timestampedErrorPrint("Nonexistent path " + path);
+        TokenMutex.lock();//LOCK 1r
+        try {
+            if (!AppConfig.storage.contains(path)) {
+                AppConfig.timestampedErrorPrint("Can't remove " + path + " - it doesn't exist in the system");
+                return;
+            }
 
+            List<String> paths = AppConfig.storage.collectPaths(path);
+            boolean removedFromThisNode = AppConfig.storage.removeEntries(paths);
+            AppConfig.timestampedStandardPrint("Removing " + paths + " from the system");
+
+            RingBroadcaster.broadcastAndWait(new RemoveMessage(AppConfig.myServentInfo.getChordId(), paths));
+            if (removedFromThisNode) {
+                BackupUtil.resync();
+            }
+        } finally {
+            TokenMutex.unlock();//UNLOCK 1r
+        }
     }
 
 }

@@ -1,0 +1,4 @@
+pause 128000
+pull testDir
+pause 30000
+info

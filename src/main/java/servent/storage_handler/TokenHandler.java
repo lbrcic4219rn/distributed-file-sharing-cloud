@@ -1,12 +1,12 @@
 package servent.storage_handler;
 
-import lombok.RequiredArgsConstructor;
-
 import app.AppConfig;
+import lombok.RequiredArgsConstructor;
+import mutex.TokenMutex;
 import servent.base_handler.MessageHandler;
 import servent.base_message.Message;
 import servent.base_message.MessageType;
-import mutex.TokenMutex;
+import servent.storage_message.TokenMessage;
 
 @RequiredArgsConstructor
 public class TokenHandler implements MessageHandler {
@@ -15,13 +15,12 @@ public class TokenHandler implements MessageHandler {
 
     @Override
     public void run() {
-
-        if (clientMessage.getMessageType() == MessageType.TOKEN) {
-            TokenMutex.receiveToken();
-        } else {
-            AppConfig.timestampedErrorPrint("Token handler got message that's not of type TOKEN.");
+        if (clientMessage.getMessageType() != MessageType.TOKEN || !(clientMessage instanceof TokenMessage message)) {
+            AppConfig.timestampedErrorPrint("TokenHandler got a message that is not TOKEN, discarding it");
+            return;
         }
 
+        TokenMutex.receiveToken(message.getGeneration(), message.getCreatorChordId());
     }
 
 }

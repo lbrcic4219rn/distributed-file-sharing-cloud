@@ -1,0 +1,8 @@
+pause 53000
+pull testDir
+pause 28000
+pull testDir
+pause 10000
+info
+pause 40000
+stop

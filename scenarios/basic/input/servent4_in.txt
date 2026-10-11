@@ -1,0 +1,10 @@
+pause 48000
+remove testDir
+pause 20000
+info
+pause 33000
+pull fileTest1.txt
+pause 30000
+info
+pause 5000
+stop

@@ -1,36 +1,32 @@
 package servent.storage_message;
 
+import app.AppConfig;
+import app.file_util.FileInfo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-
-
-import app.file_util.FileInfo;
 import servent.base_message.BasicMessage;
 import servent.base_message.MessageType;
+import servent.base_message.Routed;
 
 import java.io.Serial;
 
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class TellPullMessage extends BasicMessage {
+public class TellPullMessage extends BasicMessage implements Routed {
 
-	@Serial
-	private static final long serialVersionUID = -6213394344524749872L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-	private final String requesterIpAddress;
-	private final int requesterId;
-	private final FileInfo fileInfo;
+    private final int targetChordId;
+    private final String path;
+    private final FileInfo fileInfo;
 
-	public TellPullMessage(String senderIpAddress, int senderPort, String receiverIpAddress, int receiverPort,
-						   String requesterIpAddress, int requesterId, FileInfo fileInfo) {
-
-		super(MessageType.TELL_PULL, senderIpAddress, senderPort, receiverIpAddress, receiverPort);
-
-		this.requesterIpAddress = requesterIpAddress;
-		this.requesterId = requesterId;
-		this.fileInfo = fileInfo;
-
-	}
+    public TellPullMessage(int targetChordId, String path, FileInfo fileInfo) {
+        super(MessageType.TELL_PULL, AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort(),
+                AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getListenerPort());
+        this.targetChordId = targetChordId;
+        this.path = path;
+        this.fileInfo = fileInfo;
+    }
 
 }

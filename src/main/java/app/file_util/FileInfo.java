@@ -1,8 +1,7 @@
 package app.file_util;
 
-import lombok.Getter;
-
 import app.ChordState;
+import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -19,6 +18,7 @@ public class FileInfo implements Serializable {
     private final String content;
     private final boolean isDirectory;
     private final List<String> subFiles;
+
     private final int ogNode;
 
     public FileInfo(String path, boolean isDirectory, String content, List<String> subFiles, int ogNode) {
@@ -33,21 +33,32 @@ public class FileInfo implements Serializable {
     }
 
     public FileInfo(String path, String content, int ogNode) {
-        this(path, false, content,  null, ogNode);
+        this(path, false, content, null, ogNode);
     }
 
     public FileInfo(String path, List<String> subFiles, int ogNode) {
-        this (path, true, "", subFiles, ogNode);
+        this(path, true, "", subFiles, ogNode);
     }
 
     public FileInfo(FileInfo fileInfo) {
-        this(fileInfo.getPath(), fileInfo.isDirectory(), fileInfo.getContent(),  fileInfo.getSubFiles(), fileInfo.getOgNode());
+        this(fileInfo.getPath(), fileInfo.isDirectory(), fileInfo.getContent(), fileInfo.getSubFiles(), fileInfo.getOgNode());
     }
 
     public boolean isFile() {
         return !isDirectory;
     }
 
+    public FileInfo withoutContent() {
+        return new FileInfo(path, isDirectory, "", subFiles, ogNode);
+    }
+
+    public FileInfo withOwner(int newOwner) {
+        return new FileInfo(path, isDirectory, content, subFiles, newOwner);
+    }
+
+    public FileInfo withSubFiles(List<String> newSubFiles) {
+        return new FileInfo(path, isDirectory, content, newSubFiles, ogNode);
+    }
 
     @Override
     public int hashCode() {
@@ -56,7 +67,7 @@ public class FileInfo implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof FileInfo)return o.hashCode() == this.hashCode();
+        if (o instanceof FileInfo) return o.hashCode() == this.hashCode();
         return false;
 
     }

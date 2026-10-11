@@ -1,0 +1,6 @@
+pause 53000
+add testDir
+pause 55000
+info
+pause 8000
+stop

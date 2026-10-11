@@ -1,9 +1,10 @@
 package cli.storage_command;
 
-import java.io.File;
 import app.AppConfig;
+import app.file_util.PullManager;
 import cli.basic_command.CLICommand;
 
+import java.io.File;
 
 public class StoragePullCommand implements CLICommand {
 
@@ -16,17 +17,13 @@ public class StoragePullCommand implements CLICommand {
     public void execute(String args) {
 
         if (args == null || args.isEmpty()) {
-            AppConfig.timestampedStandardPrint("Invalid arguments for pull command. Should be pull file name [file.txt] / dir name [subDir] ");
+            AppConfig.timestampedStandardPrint("Invalid argument for pull command. Should be pull path.");
             return;
         }
 
-        String[] splitArgs = args.split(" ");
-        String path = splitArgs[0].replace('/', File.separatorChar).replace('\\', File.separatorChar);
+        String path = args.split(" ")[0].replace('/', File.separatorChar).replace('\\', File.separatorChar);
 
-
-        AppConfig.chordState.pullFile(path);
-
-
+        PullManager.pull(path);
     }
 
 }

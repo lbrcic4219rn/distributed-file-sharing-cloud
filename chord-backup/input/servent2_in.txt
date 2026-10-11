@@ -1,5 +1,0 @@
-pause 30000
-pause 12000
-pull testDir
-pause 10000
-stop

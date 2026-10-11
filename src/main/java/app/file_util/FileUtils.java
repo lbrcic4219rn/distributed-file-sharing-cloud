@@ -4,7 +4,10 @@ import app.AppConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,9 +18,7 @@ public class FileUtils {
 
 
     public static boolean isPathFile(String rootDirectory, String path) {
-        File f = new File(rootDirectory + File.separator + path);
-        AppConfig.timestampedStandardPrint("# file exists");
-        return f.isFile();
+        return new File(rootDirectory + File.separator + path).isFile();
     }
 
     public static FileInfo getFileInfoFromPath(String rootDirectory, String path) {

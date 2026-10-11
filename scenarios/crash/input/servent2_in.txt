@@ -1,0 +1,6 @@
+pause 148000
+pull fileTest1.txt
+pause 15000
+add afterCrash.txt
+pause 15000
+info
