@@ -4,10 +4,7 @@ build/
 *.class
 
 *.iml
-.idea/workspace.xml
-.idea/shelf/
-.idea/tasks.xml
-.idea/usage.statistics.xml
+.idea/
 
 .DS_Store
 
